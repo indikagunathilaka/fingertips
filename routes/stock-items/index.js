@@ -23,12 +23,8 @@ stockItems.post("/", (req, res) => {
 });
 
 stockItems.get("/find-stocks/:id/:quantity", (req, res) => {
-  ReceiveItem.find({
-    item: req.params.id,
-    availableQuantity: { $gt: 0 },
-    type: { $nin: ["CLEARED"] }
-  })
-    .sort("createdAt")
+  ReceiveItem.find({ item: req.params.id, type: { $nin: ["CLEARED"] } })
+    .sort("-createdAt")
     .populate("item purchaseOrder measuringType")
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });

@@ -25,12 +25,13 @@ const MaterialRequestSchema = new Schema(
       required: [true, "Contact number is required"]
     },
     items: [{ type: Schema.Types.ObjectId, ref: "RequestItem" }],
+    /* status: { type: String }, */
     status: {
       type: String,
       enum: [
         "PENDING",
-        "DELIVERY_REQUEST_PENDING",
-        "DELIVERY_PENDING",
+        "DELIVERY_REQUEST",
+        "DELIVERY",
         "COMPLETE"
       ],
       default: "PENDING"

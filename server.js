@@ -20,7 +20,8 @@ const dbRoute = "mongodb://isa:Qwer1234@ds111065.mlab.com:11065/fingertips";
 mongoose.connect(dbRoute, {
   useNewUrlParser: true,
   useFindAndModify: false,
-  useCreateIndex: true
+  useCreateIndex: true,
+  useUnifiedTopology: true
 });
 
 let db = mongoose.connection;
@@ -41,7 +42,7 @@ app.use((req, res, next) => {
 });
 
 // bodyParser, parse the request body to readable json format
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 // logging
 app.use(logger("dev"));

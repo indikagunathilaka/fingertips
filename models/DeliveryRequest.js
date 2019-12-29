@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const DeliveryRequestSchema = new Schema(
   {
     materialRequest: { type: Schema.Types.ObjectId, ref: "MaterialRequest" },
-    //items: [{ type: Schema.Types.ObjectId, ref: "DeliveryItem" }],
+    items: [{ type: Schema.Types.ObjectId, ref: "BinStock" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" }
   },

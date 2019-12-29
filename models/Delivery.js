@@ -11,7 +11,7 @@ const DeliverySchema = new Schema(
     },
     departureDateTime: { type: Date, required: [true, "Date is required"] },
     arrivalDateTime: Date,
-    deliveryRequest: { type: Schema.Types.ObjectId, ref: "DeliveryRequest" },
+    materialRequest: { type: Schema.Types.ObjectId, ref: "MaterialRequest" },
     status: {
       type: String,
       enum: ["PENDING", "FACTORY_RECEIVED"],

@@ -19,8 +19,16 @@ const PurchaseOrderSchema = new Schema(
     },
     expectedDate: {
       type: Date,
-      required: [true, "Expected date is required"],
+      required: [false, "Expected date is required"],
       index: true
+    },
+    netWeight: {
+      type: Number,
+      required: [false, "Net weight is required"]
+    },
+    grossWeight: {
+      type: Number,
+      required: [false, "Gross weight is required"]
     },
     receivedDate: { type: Date, index: true },
     supplier: { type: Schema.Types.ObjectId, ref: "Supplier" },
@@ -35,11 +43,11 @@ const PurchaseOrderSchema = new Schema(
         "RECEIVE_PENDING",
         "COMPLETE"
       ],
-      default: "PENDING",
+      default: "APPROVED",
       index: true
     },
     comment: String,
-    //items: [{ type: Schema.Types.ObjectId, ref: "OrderItem" }],
+    items: [{ type: Schema.Types.ObjectId, ref: "OrderItem" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" }
   },

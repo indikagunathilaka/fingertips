@@ -5,26 +5,39 @@ const Schema = mongoos.Schema;
 // create schema for Item
 const OrderItemSchema = new Schema(
   {
-    item: { type: Schema.ObjectId, ref: "StockItem" },
-    unitWeight: {
-      type: Number,
-      required: [true, "Unit weight is required"]
-    },
-    measuringType: { type: Schema.Types.ObjectId, ref: "MeasuringType" },
+    item: { type: Schema.ObjectId, ref: "ItemCategory" },
+    lotNumber: { type: String, required: [true, "LOT number is required"] },
     units: {
       type: Number,
       required: [true, "Number of units is required"]
     },
-    totalQuantity: {
+    receivedUnits: { type: Number, default: 0 },
+    pendingUnits: { type: Number, default: 0 },
+    netWeight: {
+      type: Number,
+      required: [true, "Net weight is required"]
+    },
+    grossWeight: {
+      type: Number,
+      required: [true, "Gross weight is required"]
+    },
+    /* unitWeight: {
+      type: Number,
+      required: [true, "Unit weight is required"]
+    }, */
+    /* measuringType: { type: Schema.Types.ObjectId, ref: "MeasuringType" }, */
+
+    /* totalQuantity: {
       type: Number,
       required: [true, "Total units are required"]
     },
-    /* pendingQuantity: {
+    pendingQuantity: {
       type: Number,
       required: [true, "Pending units are required"]
     }, */
     purchaseOrder: { type: Schema.Types.ObjectId, ref: "PurchaseOrder" },
-    //receiveItems: [{ type: Schema.Types.ObjectId, ref: "ReceiveItem" }],
+    /* receiveItems: [{ type: Schema.Types.ObjectId, ref: "ReceiveItem" }], */
+    stockItem: { type: Schema.Types.ObjectId, ref: "StockItem" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" }
   },

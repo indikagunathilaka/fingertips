@@ -8,10 +8,12 @@ const suppliers = require("./suppliers");
 const purchaseOrders = require("./purchase-orders");
 const materialRequests = require("./material-requests");
 const deliveries = require("./deliveries");
-const receiveItems = require("./receive-items");
 const users = require("./users");
 const roles = require("./roles");
 const items = require("./items");
+const bins = require("./bins");
+const itemCategories = require("./item-categories");
+const lotNumbers = require("./lot-numbers");
 
 routes.use("/stock-items", stockItems);
 routes.use("/packing-types", packingTypes);
@@ -21,10 +23,12 @@ routes.use("/suppliers", suppliers);
 routes.use("/purchase-orders", purchaseOrders);
 routes.use("/material-requests", materialRequests);
 routes.use("/deliveries", deliveries);
-routes.use("/receive-items", receiveItems);
 routes.use("/users", users);
 routes.use("/roles", roles);
 routes.use("/items", items);
+routes.use("/bins", bins);
+routes.use("/item-categories", itemCategories);
+routes.use("/lot-numbers", lotNumbers);
 
 routes.get("/", function(req, res, next) {
   res.status(200).send("YOU'VE REACHED THE BASE URL OF API");

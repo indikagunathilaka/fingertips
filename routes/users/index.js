@@ -71,17 +71,18 @@ users.put("/:id", (req, res) => {
       bcrypt.hash(user.password, salt, (err, hash) => {
         if (err) throw err;
         user.password = hash;
-        user
+        User.findByIdAndUpdate(user._id, user, (err, user) => {
+          if (err) return res.json({ success: false, error: err });
+          return res.json({ success: true, data: user });
+        });
+        /* user
           .save()
           .then(user => res.json(user))
-          .catch(err => console.log(err));
+          .catch(err => console.log(err)); */
       });
     });
   });
-  /* User.findByIdAndUpdate(req.params.id, req.body, (err, user) => {
-    if (err) return res.json({ success: false, error: err });
-    return res.json({ success: true, data: user });
-  }); */
+  
 });
 
 users.delete("/:id", (req, res) => {

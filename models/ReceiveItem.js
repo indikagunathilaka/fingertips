@@ -37,15 +37,6 @@ const ReceiveItemSchema = new Schema(
 );
 
 ReceiveItemSchema.plugin(diffHistory);
-/* ReceiveItemSchema.post("save", doc => {
-  StockItem.findById(doc.item, (err, stockItem) => {
-    if (data) {
-      stockItem.units += doc.totalQuantity;
-      stockItem.availableQuantity += doc.totalQuantity;
-      stockItem.save();
-    }
-  });
-}); */
 
 // create model for Item
 const ReceiveItem = mongoos.model("ReceiveItem", ReceiveItemSchema);

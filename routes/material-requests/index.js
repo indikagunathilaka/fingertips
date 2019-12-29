@@ -2,10 +2,15 @@ const materialRequests = require("express").Router();
 
 const MaterialRequest = require("../../models/MaterialRequest");
 const RequestItem = require("../../models/RequestItem");
+const BinStock = require("../../models/BinStock");
 
 materialRequests.get("/", (req, res) => {
-  MaterialRequest.find()
-    .populate({ path: "items", populate: { path: "item measuringType" } })
+  let searchParam = {};
+  if (req.query.status) {
+    searchParam.status = req.query.status;
+  }
+  MaterialRequest.find(searchParam)
+    .populate({ path: "items", populate: { path: "item stockItems" } })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -20,7 +25,7 @@ materialRequests.post("/", (req, res) => {
   req.body.items.forEach(obj => {
     let materialItem = new RequestItem(obj);
     materialItem.materialRequest = material._id;
-    materialItem.totalQuantity = materialItem.unitWeight * materialItem.units;
+    //materialItem.totalQuantity = materialItem.unitWeight * materialItem.units;
     materialItem.createdBy = req.user.id;
     materialItemIds.push(materialItem._id);
 
@@ -30,26 +35,56 @@ materialRequests.post("/", (req, res) => {
   });
 
   material.items = materialItemIds;
-  material.save(err => {
+  material.save((err, data) => {
     if (err) return res.json({ success: false, error: err });
-    return res.json({ success: true });
+    BinStock.updateMany(
+      { _id: { $in: req.body.stockItems } },
+      { $set: { status: "RESERVED" } },
+      (err, binStock) => {
+        if (err) return res.json({ success: false, error: err });
+        return res.json({ success: true, data: data });
+      }
+    );
+    //return res.json({ success: true });
   });
 });
 
 materialRequests.get("/:id", (req, res) => {
   MaterialRequest.findById(req.params.id)
-    .populate({ path: "items", populate: { path: "item measuringType" } })
+    .populate({ path: "items", populate: { path: "item stockItems" } })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error, err });
       return res.json({ success: true, data: data });
     });
 });
 
+materialRequests.put("/:id", (req, res) => {
+  req.body.updatedBy = req.user.id;
+  //console.log("Update:", req.body, ", ID:", req.params.id);
+  MaterialRequest.findByIdAndUpdate(
+    req.params.id,
+    { $set: req.body },
+    (err, data) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, data: data });
+    }
+  );
+  /* MaterialRequest.findById(req.params.id, (err, data) => {
+    if (err) return res.json({ success: false, error: err });
+    data.status = req.body.status;
+    data.updatedBy = req.user.id;
+    data.save((err, item) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, data: item });
+    });
+  }); */
+});
+
 materialRequests.delete("/:id", (req, res) => {
   MaterialRequest.findByIdAndDelete(req.params.id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
     data.items.forEach(item => {
-      RequestItem.findByIdAndDelete(item._id, (err, item) => {
+      MaterialItem.findByIdAndDelete(item._id, (err, item) => {
         if (err) console.log("Material request item deletion failed.", err);
       });
     });
