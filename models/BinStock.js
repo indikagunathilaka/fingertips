@@ -13,7 +13,7 @@ const BinStockSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["AVAILABLE", "RESERVED", "DELIVER", "FACTORY_RECEIVED"],
+      enum: ["AVAILABLE", "RESERVED", "DISPATCHED", "FACTORY_RECEIVED"],
       default: "AVAILABLE"
     },
     detailsStatus: {
@@ -27,6 +27,8 @@ const BinStockSchema = new Schema(
     lotNumber: { type: String },
     itemCode: { type: String },
     binCode: { type: String },
+    dispatchedTime: { type: Date },
+    receivedTime: { type: Date },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" }
   },

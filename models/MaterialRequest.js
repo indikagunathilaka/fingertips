@@ -30,8 +30,9 @@ const MaterialRequestSchema = new Schema(
       type: String,
       enum: [
         "PENDING",
-        "DELIVERY_REQUEST",
-        "DELIVERY",
+        "PARTIALY_DISPATCHED",
+        "DISPATCHED",
+        "PARTIALY_RECEIVED",
         "COMPLETE"
       ],
       default: "PENDING"

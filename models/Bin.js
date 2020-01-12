@@ -20,6 +20,8 @@ const BinSchema = new Schema({
     unique: true,
     required: [true, "Bin code is required"]
   },
+  remark: { type: String },
+  deleted: { type: Boolean, default: false },
   stockItems: [{ type: Schema.Types.ObjectId, ref: "BinStock" }]
 });
 /* BinSchema.virtual("code").get(() => {

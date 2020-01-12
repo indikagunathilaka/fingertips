@@ -9,6 +9,8 @@ const ReceiveItem = require("../../models/ReceiveItem");
 const StockItem = require("../../models/StockItem");
 const BinStock = require("../../models/BinStock");
 
+const _ = require("lodash");
+
 deliveries.get("/requests", (req, res) => {
   DeliveryRequest.find()
     .populate([
@@ -41,22 +43,7 @@ deliveries.get("/requests/:id", (req, res) => {
 
 deliveries.get("/", (req, res) => {
   Delivery.find()
-    .populate([
-      { path: "materialRequest createdBy updatedBy" }
-      /* {
-        path: "deliveryRequest",
-        populate: [
-          { path: "materialRequest" },
-          {
-            path: "items",
-            populate: {
-              path: "receiveItem",
-              populate: { path: "item purchaseOrder measuringType" }
-            }
-          }
-        ]
-      } */
-    ])
+    .populate([{ path: "createdBy updatedBy" }])
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -64,7 +51,6 @@ deliveries.get("/", (req, res) => {
 });
 
 deliveries.post("/filter", (req, res) => {
-  console.log("Search Q: ", req.body);
   const queryData =
     Object.entries(req.body).length > 0
       ? Object.assign(
@@ -73,24 +59,8 @@ deliveries.post("/filter", (req, res) => {
           }))
         )
       : req.body;
-  console.log("Search: ", queryData);
   Delivery.find(queryData)
-    .populate([
-      { path: "createdBy updatedBy" },
-      {
-        path: "deliveryRequest",
-        populate: [
-          { path: "materialRequest" },
-          {
-            path: "items",
-            populate: {
-              path: "receiveItem",
-              populate: { path: "item purchaseOrder measuringType" }
-            }
-          }
-        ]
-      }
-    ])
+    .populate({ path: "createdBy updatedBy" })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -122,13 +92,11 @@ deliveries.post("/requests/filter", (req, res) => {
 deliveries.get("/:id", (req, res) => {
   Delivery.findById(req.params.id)
     .populate({
-      path: "materialRequest",
-      populate: {
-        path: "items",
-        populate: {
-          path: "item stockItems"
-        }
-      }
+      path: "items",
+      populate: [
+        { path: "requestItem", populate: "item materialRequest" },
+        { path: "stockItems" }
+      ]
     })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
@@ -256,53 +224,139 @@ deliveries.post("/", (req, res) => {
   let delivery = new Delivery(req.body);
   delivery.createdBy = req.user.id;
 
-  delivery.save((err, deliveryData) => {
-    if (err) return res.json({ success: false, error: err });
-    MaterialRequest.findById(deliveryData.materialRequest)
-      .populate("items")
-      .exec((err, materialRequest) => {
-        if (err) return res.json({ success: false, error: err });
-        materialRequest.status = "DELIVERY";
+  BinStock.updateMany(
+    { _id: { $in: req.body.deliveryStockItems } },
+    { $set: { status: "DISPATCHED", dispatchedTime: Date.now() } },
+    async (err, data) => {
+      if (err) return res.json({ success: false, error: err });
+
+      const deliveryItems = [];
+      for (const materialRequestId of req.body.materialRequests) {
+        const materialRequest = await MaterialRequest.findById(
+          materialRequestId
+        ).populate("items");
+
+        for (requestItem of materialRequest.items) {
+          let requestedStockItems = requestItem.stockItems;
+          let stockItemsDiff = _.difference(
+            requestedStockItems.map(String),
+            req.body.deliveryStockItems.map(String)
+          );
+          if (stockItemsDiff.length === 0) {
+            let deliveryItem = {
+              requestItem: requestItem._id,
+              units: requestedStockItems.length,
+              stockItems: requestedStockItems,
+              delivery: delivery._id
+            };
+            deliveryItems.push(deliveryItem);
+          } else if (stockItemsDiff.length < requestedStockItems.length) {
+            let deliveryItem = {
+              requestItem: requestItem._id,
+              units: stockItemsDiff.length,
+              stockItems: stockItemsDiff,
+              delivery: delivery._id
+            };
+            deliveryItems.push(deliveryItem);
+          }
+        }
+
         materialRequest.updatedBy = req.user.id;
-        const totalStocks = materialRequest.items
+        const requestedStockItems = materialRequest.items
           .map(item => {
             return item.stockItems;
           })
           .reduce((prev, curr) => {
             return prev.concat(curr);
           });
-        console.log("Stocks:", totalStocks);
-        materialRequest.save((err, data) => {
+        let stockItemsDiff = _.difference(
+          requestedStockItems.map(String),
+          req.body.deliveryStockItems.map(String)
+        );
+        if (stockItemsDiff.length === 0) {
+          materialRequest.status = "DISPATCHED";
+        } else if (stockItemsDiff.length < requestedStockItems.length) {
+          materialRequest.status = "PARTIALY_DISPATCHED";
+        }
+        await materialRequest.save();
+      }
+
+      DeliveryItem.insertMany(deliveryItems, (err, docs) => {
+        if (err) return res.json({ success: false, error: err });
+
+        delivery.items = docs.map(item => item._id);
+        delivery.save((err, doc) => {
           if (err) return res.json({ success: false, error: err });
-          BinStock.updateMany(
-            { _id: { $in: totalStocks } },
-            { $set: { status: "DELIVER" } },
-            (err, data) => {
-              if (err) return res.json({ success: false, error: err });
-              return res.json({ success: true, data: deliveryData });
-            }
-          );
+
+          return res.json({ success: true, data: doc });
         });
       });
-  });
+    }
+  );
 });
 
 deliveries.put("/:id", (req, res) => {
-  req.body._user = req.user.id;
-  Delivery.findByIdAndUpdate(req.params.id, { $set: req.body }, (err, data) => {
-    if (err) return res.json({ success: false, error: err });
-    BinStock.updateMany(
-      { _id: { $in: req.body.stockItems } },
-      { $set: { status: "FACTORY_RECEIVED" } },
-      (err, binStocks) => {
-        if (err) return res.json({ success: false, error: err });
-        MaterialRequest.findByIdAndUpdate(data.materialRequest, {$set: {status: "COMPLETE"}}, (err, materialRequest) => {
+  req.body.updatedBy = req.user.id;
+  Delivery.findByIdAndUpdate(
+    req.params.id,
+    { $set: req.body },
+    (err, deliveryData) => {
+      if (err) return res.json({ success: false, error: err });
+
+      BinStock.updateMany(
+        { _id: { $in: req.body.receivedStockItems } },
+        { $set: { status: "FACTORY_RECEIVED", receivedTime: Date.now() } },
+        async (err, binStocks) => {
           if (err) return res.json({ success: false, error: err });
-          return res.json({ success: true, data: data });
-        });
-      }
-    );
-  });
+
+          for await (const materialRequestId of deliveryData.materialRequests) {
+            MaterialRequest.findById(materialRequestId).exec(
+              (err, materialRequest) => {
+                if (err) return res.json({ success: false, error: err });
+
+                materialRequest.updatedBy = req.user.id;
+                if (materialRequest.status === "DISPATCHED") {
+                  materialRequest.status = "COMPLETE";
+                } else if (materialRequest.status === "PARTIALY_DISPATCHED") {
+                  materialRequest.status = "PARTIALY_RECEIVED";
+                }
+                materialRequest.save();
+              }
+            );
+          }
+          /* for await (const materialRequestId of deliveryData.materialRequests) {
+            MaterialRequest.findById(materialRequestId)
+              .populate("items")
+              .exec((err, materialRequest) => {
+                if (err) return res.json({ success: false, error: err });
+                materialRequest.updatedBy = req.user.id;
+                const totalStocks = materialRequest.items
+                  .map(item => {
+                    return item.stockItems;
+                  })
+                  .reduce((prev, curr) => {
+                    return prev.concat(curr);
+                  });
+
+                if (
+                  _.difference(
+                    totalStocks.map(String),
+                    deliveryData.items.map(String)
+                  ).length === 0
+                ) {
+                  materialRequest.status = "COMPLETE";
+                } else {
+                  materialRequest.status = "PARTIALY_RECEIVED";
+                }
+                materialRequest.save();
+              });
+          } */
+
+          return res.json({ success: true, data: deliveryData });
+        }
+      );
+    }
+  );
 });
 
 findAvailableStocks = async stockItemId => {

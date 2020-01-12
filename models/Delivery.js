@@ -4,14 +4,18 @@ const Schema = mongoose.Schema;
 
 const DeliverySchema = new Schema(
   {
+    deliveryNumber: {
+      type: String,
+      required: [true, "Reference number is required"],
+    },
     vehicleNumber: {
       type: String,
       required: [true, "Vehicle number is required"],
-      index: true
     },
     departureDateTime: { type: Date, required: [true, "Date is required"] },
     arrivalDateTime: Date,
-    materialRequest: { type: Schema.Types.ObjectId, ref: "MaterialRequest" },
+    materialRequests: [{ type: Schema.Types.ObjectId, ref: "MaterialRequest" }],
+    items: [{ type: Schema.Types.ObjectId, ref: "DeliveryItem" }],
     status: {
       type: String,
       enum: ["PENDING", "FACTORY_RECEIVED"],

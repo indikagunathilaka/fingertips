@@ -39,7 +39,7 @@ bins.get("/with-stocks", (req, res) => {
 
 bins.get("/search", (req, res) => {
   let search = {};
-  let searchBinStock = { status: { $in: ["AVAILABLE", "RESERVED"] } };
+  let searchBinStock = { status: { $in: ["AVAILABLE", "RESERVED", "DISPATCHED"] } };
   if (req.query.lotNumber) {
     searchBinStock.lotNumber = req.query.lotNumber;
   }
@@ -52,7 +52,6 @@ bins.get("/search", (req, res) => {
   /* BinStock.find(searchBinStock, (err, stocks) => {
     search.stockItems = { $in: stocks.map(item => item._id)}
   }); */
-  console.log("SearchBin:", searchBinStock);
   Bin.find(search)
     .sort([
       ["section", "asc"],
@@ -82,7 +81,9 @@ bins.post("/filter", (req, res) => {
 });
 
 bins.post("/", (req, res) => {
-  Bin.create(req.body, (err, bin) => {
+  req.body.code = `${req.body.section}${req.body.xAxis}${req.body.yAxis}`;
+  let bin = new Bin(req.body);
+  bin.save((err, bin) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: bin });
   });
@@ -232,6 +233,15 @@ bins.post("/stocks/batch", (req, res) => {
     }
     return res.json({ success: true });
   });
+});
+
+bins.put("/stocks/batch", async (req, res) => {
+  for (stock of req.body.stockItems) {
+    const binStock = await BinStock.findByIdAndUpdate(stock._id, {
+      $set: stock.update
+    });
+  }
+  return res.json({ success: true });
 });
 
 bins.get("/stocks", (req, res) => {

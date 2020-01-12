@@ -7,9 +7,26 @@ const BinStock = require("../../models/BinStock");
 materialRequests.get("/", (req, res) => {
   let searchParam = {};
   if (req.query.status) {
-    searchParam.status = req.query.status;
+    searchParam.status = { $in: req.query.status.split(",") };
   }
   MaterialRequest.find(searchParam)
+    .populate({ path: "items", populate: { path: "item stockItems" } })
+    .exec((err, data) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, data: data });
+    });
+});
+
+materialRequests.post("/filter", (req, res) => {
+  const queryData =
+    Object.entries(req.body).length > 0
+      ? Object.assign(
+          ...Object.entries(req.body).map(([k, v]) => ({
+            [k]: new RegExp(v, "i")
+          }))
+        )
+      : req.body;
+  MaterialRequest.find(queryData)
     .populate({ path: "items", populate: { path: "item stockItems" } })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
@@ -51,7 +68,13 @@ materialRequests.post("/", (req, res) => {
 
 materialRequests.get("/:id", (req, res) => {
   MaterialRequest.findById(req.params.id)
-    .populate({ path: "items", populate: { path: "item stockItems" } })
+    .populate({
+      path: "items",
+      populate: [
+        { path: "item" },
+        { path: "stockItems", populate: { path: "orderItem bin" } }
+      ]
+    })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error, err });
       return res.json({ success: true, data: data });
