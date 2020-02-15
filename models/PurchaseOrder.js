@@ -11,7 +11,8 @@ const PurchaseOrderSchema = new Schema(
       required: [true, "Order number is required"],
       index: true
     },
-    subCode: { type: String, index: true },
+    codePrefix: { type: String, required: [true, "Code prefix is required"] },
+    codeSuffix: { type: String, required: [true, "Code suffix is required"] },
     orderDate: {
       type: Date,
       required: [true, "Order date is required"],

@@ -4,7 +4,6 @@ const LotNumber = require("../../models/LotNumber");
 
 lotNumbers.get("/", (req, res) => {
   LotNumber.find()
-    .populate("createdBy updatedBy")
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -21,16 +20,7 @@ lotNumbers.get("/search", (req, res) => {
 });
 
 lotNumbers.post("/filter", (req, res) => {
-  const queryData =
-    Object.entries(req.body).length > 0
-      ? Object.assign(
-          ...Object.entries(req.body).map(([k, v]) => ({
-            [k]: new RegExp(v, "i")
-          }))
-        )
-      : req.body;
-  LotNumber.find(queryData)
-    .populate("createdBy updatedBy")
+  LotNumber.find(req.body)
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });

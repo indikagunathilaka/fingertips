@@ -11,6 +11,7 @@ materialRequests.get("/", (req, res) => {
   }
   MaterialRequest.find(searchParam)
     .populate({ path: "items", populate: { path: "item stockItems" } })
+    .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -107,7 +108,7 @@ materialRequests.delete("/:id", (req, res) => {
   MaterialRequest.findByIdAndDelete(req.params.id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
     data.items.forEach(item => {
-      MaterialItem.findByIdAndDelete(item._id, (err, item) => {
+      RequestItem.findByIdAndDelete(item._id, (err, item) => {
         if (err) console.log("Material request item deletion failed.", err);
       });
     });

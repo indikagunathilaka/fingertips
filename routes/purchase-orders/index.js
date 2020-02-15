@@ -23,6 +23,7 @@ purchaseOrders.get("/", (req, res) => {
       { path: "createdBy" },
       { path: "updatedBy" }
     ])
+    .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -209,10 +210,12 @@ purchaseOrders.post("/filter", (req, res) => {
 purchaseOrders.get("/items/lot-numbers", (req, res) => {
   ItemCategory.findOne({ code: req.query.itemCode }, { _id: 1 }, (err, doc) => {
     let id = doc._id;
-    OrderItem.find({ item: { $in: id } }).distinct('lotNumber').exec((err, docs) => {
-      if (err) return res.json({ success: false, error: err });
-      return res.json({ success: true, data: docs });
-    });
+    OrderItem.find({ item: { $in: id } })
+      .distinct("lotNumber")
+      .exec((err, docs) => {
+        if (err) return res.json({ success: false, error: err });
+        return res.json({ success: true, data: docs });
+      });
   });
 });
 
@@ -236,33 +239,27 @@ purchaseOrders.get("/:id", (req, res) => {
     });
 });
 
-purchaseOrders.put("/:id", (req, res) => {
-  let purchaseOrder = new PurchaseOrder(req.body);
-  console.log("Update data:", purchaseOrder);
-  purchaseOrder._id = req.params.id;
-  const orderItemIds = [];
-
-  PurchaseOrder.findById(req.params.id)
+purchaseOrders.put("/:id", async (req, res) => {
+  let purchaseOrder = await PurchaseOrder.findById(req.params.id)
     .populate("items")
-    .exec((err, order) => {
-      if (!err) {
-        OrderItem.deleteMany({
-          _id: { $in: order.items.map(item => item._id) }
-        });
-      }
-    });
-  req.body.items.forEach(orderItemData => {
-    let orderItem = new OrderItem(orderItemData);
-    orderItem.createdBy = req.user.id;
-    orderItem.totalQuantity = orderItem.unitWeight * orderItem.units;
-    orderItem.pendingQuantity = orderItem.totalQuantity;
-    orderItemIds.push(orderItem._id);
+    .exec();
 
-    orderItem.save((err, orderItem) => {
-      if (err) return res.json({ success: false, error: err });
+  if (purchaseOrder) {
+    let deletedItems = await OrderItem.deleteMany({
+      _id: { $in: purchaseOrder.items.map(item => item._id) }
     });
-  });
-  /* req.body.items.forEach(orderItemData => {
+
+    const orderItemIds = [];
+    for (orderItemData of req.body.items) {
+      let orderItem = new OrderItem(orderItemData);
+      orderItem.purchaseOrder = purchaseOrder._id;
+      orderItem.createdBy = req.user.id;
+
+      orderItem = await orderItem.save();
+      orderItemIds.push(orderItem._id);
+    }
+
+    /* req.body.items.forEach(orderItemData => {
     let orderItem = new OrderItem(orderItemData);
 
     if (orderItemData._id) {
@@ -287,17 +284,40 @@ purchaseOrders.put("/:id", (req, res) => {
       });
     }
   }); */
-  purchaseOrder.items = orderItemIds;
-  purchaseOrder.updatedBy = req.user.id;
-  PurchaseOrder.updateOne(
-    { _id: purchaseOrder._id },
-    purchaseOrder,
-    { new: true, upsert: true },
-    (err, order) => {
-      if (err) return res.json({ success: false, error: err });
+
+    purchaseOrder.items = orderItemIds;
+    purchaseOrder.codePrefix = req.body.codePrefix;
+    purchaseOrder.codeSuffix = req.body.codeSuffix;
+    purchaseOrder.code = req.body.code;
+    purchaseOrder.netWeight = req.body.netWeight;
+    purchaseOrder.grossWeight = req.body.grossWeight;
+    purchaseOrder.orderDate = req.body.orderDate;
+    purchaseOrder.receivedDate = req.body.receivedDate;
+    purchaseOrder.updatedBy = req.user.id;
+    
+    purchaseOrder.save((err, order) => {
+      if (err) {
+        console.log("Edit Error:", err);
+        return res.json({ success: false, error: err });
+      }
       return res.json({ success: true, data: order });
-    }
-  );
+    });
+    /* PurchaseOrder.updateOne(
+      { _id: purchaseOrder._id },
+      purchaseOrder,
+      { new: true, upsert: true },
+      (err, order) => {
+        if (err) {
+          console.log("Edit Error:", err);
+          return res.json({ success: false, error: err });
+        }
+        return res.json({ success: true, data: order });
+      } 
+    );*/
+    //return res.json({ success: true, data: purchaseOrder });
+  } else {
+    return res.json({ success: false });
+  }
 });
 
 purchaseOrders.delete("/:id", (req, res) => {

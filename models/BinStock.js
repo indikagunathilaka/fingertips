@@ -11,6 +11,7 @@ const BinStockSchema = new Schema(
       type: String,
       required: [true, "Running number is required"]
     },
+    packSerial: { type: String, required: true },
     status: {
       type: String,
       enum: ["AVAILABLE", "RESERVED", "DISPATCHED", "FACTORY_RECEIVED"],

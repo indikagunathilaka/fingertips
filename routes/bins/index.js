@@ -1,4 +1,5 @@
 const bins = require("express").Router();
+const moment = require("moment");
 
 const Bin = require("../../models/Bin");
 const BinStock = require("../../models/BinStock");
@@ -163,11 +164,12 @@ bins.post("/:id/stocks", (req, res) => {
     ) {
       //console.log("Run:", item.receivedUnits);
       //let runningNumber = i;
-      //console.log("Test:", i + "/" + item.orderItem.units);
+      console.log("PackSerial:", stockItem.packingListNumber+ moment(item.purchaseOrder.createdAt).format("YYYYMMDD") + i + "/" + item.units);
       let binStock = new BinStock({
         bin: stockItem.bin,
         orderItem: stockItem.orderItem,
         runningNumber: i + "/" + item.units,
+        packSerial: stockItem.packingListNumber + moment(item.purchaseOrder.createdAt).format("YYYYMMDD") + i + "/" + item.units,
         lotNumber: stockItem.lotNumber,
         itemCode: stockItem.itemCode,
         binCode: stockItem.binCode,

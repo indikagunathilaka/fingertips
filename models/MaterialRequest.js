@@ -11,6 +11,8 @@ const MaterialRequestSchema = new Schema(
       required: [true, "Reference number is required"],
       index: true
     },
+    refNumberPrefix: { type: String, required: [true, "RefNumber prefix is required"] },
+    refNumberSuffix: { type: String, required: [true, "RefNumber suffix is required"] },
     deliveryLocation: {
       type: String,
       required: [true, "Delivery location is required"]

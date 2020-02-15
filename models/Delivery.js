@@ -8,6 +8,8 @@ const DeliverySchema = new Schema(
       type: String,
       required: [true, "Reference number is required"],
     },
+    deliveryNumberPrefix: { type: String, required: [true, "Reference number prefix is required"] },
+    deliveryNumberSuffix: { type: String, required: [true, "Reference number suffix is required"] },
     vehicleNumber: {
       type: String,
       required: [true, "Vehicle number is required"],

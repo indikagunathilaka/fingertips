@@ -17,6 +17,7 @@ deliveries.get("/requests", (req, res) => {
       { path: "materialRequest createdBy updatedBy" },
       { path: "items", populate: { path: "receiveItem" } }
     ])
+    .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -44,6 +45,7 @@ deliveries.get("/requests/:id", (req, res) => {
 deliveries.get("/", (req, res) => {
   Delivery.find()
     .populate([{ path: "createdBy updatedBy" }])
+    .sort({ createdAt: -1 })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -77,7 +79,7 @@ deliveries.post("/requests/filter", (req, res) => {
           }))
         )
       : req.body;
-  console.log("Search: ", queryData);
+  //console.log("Search: ", queryData);
   DeliveryRequest.find(queryData)
     .populate([
       { path: "materialRequest createdBy updatedBy" },
