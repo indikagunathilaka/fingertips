@@ -93,11 +93,12 @@ purchaseOrders.post("/", (req, res) => {
   const orderItemIds = [];
 
   req.body.items.forEach(item => {
+    delete item._id;
     let orderItem = new OrderItem(item);
     orderItem.purchaseOrder = purchaseOrder._id;
     orderItem.createdBy = req.user.id;
+    orderItem.pendingUnits = orderItem.units;
     //orderItem.totalQuantity = orderItem.unitWeight * orderItem.units;
-    //orderItem.pendingQuantity = orderItem.totalQuantity;
     orderItemIds.push(orderItem._id);
 
     orderItem.save((err, orderItem) => {
@@ -245,45 +246,34 @@ purchaseOrders.put("/:id", async (req, res) => {
     .exec();
 
   if (purchaseOrder) {
-    let deletedItems = await OrderItem.deleteMany({
-      _id: { $in: purchaseOrder.items.map(item => item._id) }
+    const itemIdList = req.body.items.map(item => item._id);
+    //console.log("Submitted Ids:", itemIdList);
+    const deleteOrderItems = purchaseOrder.items.filter(item => !itemIdList.includes(item._id.toString()));
+    await OrderItem.deleteMany({
+      _id: { $in: deleteOrderItems.map(item => item._id) }
     });
+    //console.log("DeleteItems:", deleteOrderItems);
+    /* let deletedItems = await OrderItem.deleteMany({
+      _id: { $in: purchaseOrder.items.map(item => item._id) }
+    }); */
 
     const orderItemIds = [];
     for (orderItemData of req.body.items) {
-      let orderItem = new OrderItem(orderItemData);
-      orderItem.purchaseOrder = purchaseOrder._id;
-      orderItem.createdBy = req.user.id;
-
-      orderItem = await orderItem.save();
-      orderItemIds.push(orderItem._id);
-    }
-
-    /* req.body.items.forEach(orderItemData => {
-    let orderItem = new OrderItem(orderItemData);
-
-    if (orderItemData._id) {
-      orderItem._id = orderItemData._id;
-      orderItem.updatedBy = req.user.id;
-      orderItemIds.push(orderItem._id);
-      OrderItem.updateOne({ _id: orderItem._id }, orderItem, err => {
-        if (err) return console.log("Order item update error: ", err);
-      });
-    } else {
-      orderItemIds.push(orderItem._id);
-      let stockItem = new StockItem(orderItemData.item);
-      stockItem.createdBy = req.user.id;
-      stockItem.save((err, stockItem) => {
-        if (err) return console.log("Stock item create error: ", err);
-
-        orderItem.item = stockItem._id;
-        orderItem.createdBy = req.user.id;
-        orderItem.save((err, orderItem) => {
-          if (err) return console.log("Order item create error: ", err);
+      let orderItem = null;
+      if (orderItemData._id) {
+        orderItem = await OrderItem.findByIdAndUpdate(orderItemData._id, {
+          $set: orderItemData
         });
-      });
+      } else {
+        delete orderItemData._id;
+        orderItem = new OrderItem(orderItemData);
+        orderItem.purchaseOrder = purchaseOrder._id;
+        orderItem.createdBy = req.user.id;
+        orderItem = await orderItem.save();
+      }
+      
+      orderItemIds.push(orderItem._id);
     }
-  }); */
 
     purchaseOrder.items = orderItemIds;
     purchaseOrder.codePrefix = req.body.codePrefix;
@@ -297,24 +287,10 @@ purchaseOrders.put("/:id", async (req, res) => {
     
     purchaseOrder.save((err, order) => {
       if (err) {
-        console.log("Edit Error:", err);
         return res.json({ success: false, error: err });
       }
       return res.json({ success: true, data: order });
     });
-    /* PurchaseOrder.updateOne(
-      { _id: purchaseOrder._id },
-      purchaseOrder,
-      { new: true, upsert: true },
-      (err, order) => {
-        if (err) {
-          console.log("Edit Error:", err);
-          return res.json({ success: false, error: err });
-        }
-        return res.json({ success: true, data: order });
-      } 
-    );*/
-    //return res.json({ success: true, data: purchaseOrder });
   } else {
     return res.json({ success: false });
   }

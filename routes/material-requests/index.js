@@ -104,10 +104,17 @@ materialRequests.put("/:id", (req, res) => {
   }); */
 });
 
-materialRequests.delete("/:id", (req, res) => {
+materialRequests.delete("/:id", async (req, res) => {
+  //const deliveryList = await Delivery.find({ materialRequests: { $in: [req.params.id] }});
+  //console.log("Deliveries:", deliveryList);
   MaterialRequest.findByIdAndDelete(req.params.id, (err, data) => {
     if (err) return res.json({ success: false, error: err });
     data.items.forEach(item => {
+      BinStock.updateMany(
+        { _id: { $in: item.stockItems } },
+        { $set: { status: "AVAILABLE" } }
+      ).exec();
+
       RequestItem.findByIdAndDelete(item._id, (err, item) => {
         if (err) console.log("Material request item deletion failed.", err);
       });

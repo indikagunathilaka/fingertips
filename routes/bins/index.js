@@ -7,12 +7,16 @@ const OrderItem = require("../../models/OrderItem");
 const purchaseOrder = require("../../models/PurchaseOrder");
 
 bins.get("/", (req, res) => {
+  let searchBinStock = {
+    status: { $in: ["AVAILABLE", "RESERVED", "DISPATCHED"] }
+  };
   Bin.find()
     .sort([
       ["section", "asc"],
       ["xAxis", "asc"],
       ["yAxis", "asc"]
     ])
+    .populate({ path: "stockItems", match: searchBinStock })
     .exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
       return res.json({ success: true, data: data });
@@ -40,7 +44,9 @@ bins.get("/with-stocks", (req, res) => {
 
 bins.get("/search", (req, res) => {
   let search = {};
-  let searchBinStock = { status: { $in: ["AVAILABLE", "RESERVED", "DISPATCHED"] } };
+  let searchBinStock = {
+    status: { $in: ["AVAILABLE", "RESERVED", "DISPATCHED"] }
+  };
   if (req.query.lotNumber) {
     searchBinStock.lotNumber = req.query.lotNumber;
   }
@@ -99,7 +105,11 @@ bins.post("/", (req, res) => {
 
 bins.put("/:binId/stocks/:binStockId", (req, res) => {
   req.body.updatedBy = req.user.id;
-  req.body.detailsStatus = "COMPLETE";
+  if (req.body.netWeight && req.body.grossWeight && req.body.cones) {
+    req.body.detailsStatus = "COMPLETE";
+  } else {
+    req.body.detailsStatus = "PENDING";
+  }
   BinStock.findByIdAndUpdate(
     req.params.binStockId,
     { $set: req.body },
@@ -126,6 +136,42 @@ bins.put("/:id", (req, res) => {
   Bin.findByIdAndUpdate(req.params.id, req.body, (err, bin) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: bin });
+  });
+});
+
+bins.delete("/:binId/stock/:stockId", (req, res) => {
+  Bin.findById(req.params.binId, (err, bin) => {
+    if (err) return res.json({ success: false, error: "Bin not found." });
+
+    BinStock.findByIdAndDelete(req.params.stockId, (err, stock) => {
+      if (err) return res.json({ success: false, error: err });
+
+      const stockItemsAfterDelete = bin.stockItems.filter(
+        id => id != req.params.stockId
+      );
+      bin.stockItems = stockItemsAfterDelete;
+      bin.save(async (err, bin) => {
+        if (err) return res.json({ success: false, error: err });
+
+        const orderItem = await OrderItem.findById(stock.orderItem);
+        if (orderItem && orderItem.receivedUnits > 0) {
+          console.log("OrderItem:", orderItem);
+          await OrderItem.findByIdAndUpdate(stock.orderItem, {
+            $set: { receivedUnits: orderItem.receivedUnits - 1 }
+          }).exec();
+        }
+
+        return res.json({
+          success: true,
+          message: "Stock deleted successfull.",
+          data: stock
+        });
+      });
+    });
+    /* const stockItemsAfterDelete = bin.stockItems.filter(id => id != req.params.stockId);
+    bin.stockItems = stockItemsAfterDelete;
+    console.log("StockItems:", stockItemsAfterDelete);
+    console.log("BinStocks:", bin.stockItems); */
   });
 });
 
@@ -164,12 +210,24 @@ bins.post("/:id/stocks", (req, res) => {
     ) {
       //console.log("Run:", item.receivedUnits);
       //let runningNumber = i;
-      console.log("PackSerial:", stockItem.packingListNumber+ moment(item.purchaseOrder.createdAt).format("YYYYMMDD") + i + "/" + item.units);
+      console.log(
+        "PackSerial:",
+        stockItem.packingListNumber +
+          moment(item.purchaseOrder.createdAt).format("YYYYMMDD") +
+          i +
+          "/" +
+          item.units
+      );
       let binStock = new BinStock({
         bin: stockItem.bin,
         orderItem: stockItem.orderItem,
         runningNumber: i + "/" + item.units,
-        packSerial: stockItem.packingListNumber + moment(item.purchaseOrder.createdAt).format("YYYYMMDD") + i + "/" + item.units,
+        packSerial:
+          stockItem.packingListNumber +
+          moment(item.purchaseOrder.createdAt).format("YYYYMMDD") +
+          i +
+          "/" +
+          item.units,
         lotNumber: stockItem.lotNumber,
         itemCode: stockItem.itemCode,
         binCode: stockItem.binCode,
@@ -183,9 +241,28 @@ bins.post("/:id/stocks", (req, res) => {
     item.updatedBy = req.user.id;
     await item.save();
     if (item.pendingUnits === 0) {
-      await purchaseOrder
-        .findByIdAndUpdate(item.purchaseOrder, { $set: { status: "COMPLETE" } })
-        .exec();
+      const order = await purchaseOrder.findById(item.purchaseOrder).populate([
+        {
+          path: "items",
+          populate: { path: "item" }
+        }
+      ]);
+      const pendingOrderItems = order.items.filter(
+        item => item.pendingUnits != 0
+      );
+      if (pendingOrderItems.length === 0) {
+        await purchaseOrder
+          .findByIdAndUpdate(item.purchaseOrder, {
+            $set: { status: "COMPLETE" }
+          })
+          .exec();
+      } else {
+        await purchaseOrder
+          .findByIdAndUpdate(item.purchaseOrder, {
+            $set: { status: "RECEIVE_PENDING" }
+          })
+          .exec();
+      }
     } else {
       await purchaseOrder
         .findByIdAndUpdate(item.purchaseOrder, {

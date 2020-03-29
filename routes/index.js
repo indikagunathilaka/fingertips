@@ -1,5 +1,6 @@
 const routes = require("express").Router();
 
+const stocks = require("./stocks");
 const stockItems = require("./stock-items");
 const packingTypes = require("./packing-types");
 const measuringTypes = require("./measuring-types");
@@ -15,6 +16,7 @@ const bins = require("./bins");
 const itemCategories = require("./item-categories");
 const lotNumbers = require("./lot-numbers");
 
+routes.use("/stocks", stocks);
 routes.use("/stock-items", stockItems);
 routes.use("/packing-types", packingTypes);
 routes.use("/measuring-types", measuringTypes);

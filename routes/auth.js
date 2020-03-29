@@ -37,6 +37,8 @@ auth.post("/login", (req, res) => {
             (err, token) => {
               res.json({
                 success: true,
+                status: "ok",
+                currentAuthority: "admin",
                 token: token
               });
             }
