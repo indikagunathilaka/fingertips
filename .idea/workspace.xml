@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4dcb341d-0cb5-4d9d-b31d-a04e16c0cc43" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/build/precache-manifest.ab6542e36d69641d070494e599300069.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/static/css/main.05f0d7a7.chunk.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/static/js/2.9e2eb098.chunk.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build/static/js/main.9e65bdbc.chunk.js" afterDir="false" />
+    <list default="true" id="15ebf2c4-e263-4551-a38f-2245c9e4f345" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/build/precache-manifest.44c88633450b28ec83b623ca404f6905.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build/static/js/main.132d589c.chunk.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/$PRODUCT_WORKSPACE_FILE$" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/$PRODUCT_WORKSPACE_FILE$" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dev-fingertips.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sbt.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sbt.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/asset-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/build/asset-manifest.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/precache-manifest.9208523141a33f1576989afe7f40aef4.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/service-worker.js" beforeDir="false" afterPath="$PROJECT_DIR$/build/service-worker.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/BinStock.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/BinStock.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/Delivery.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Delivery.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/MaterialRequest.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/MaterialRequest.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/PurchaseOrder.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/PurchaseOrder.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/bins/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/bins/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/deliveries/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/deliveries/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/lot-numbers/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/lot-numbers/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/material-requests/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/material-requests/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/purchase-orders/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/purchase-orders/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/static/js/main.5c76192e.chunk.js" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -36,22 +31,11 @@
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
-  <component name="ProjectConfigurationFiles">
-    <option name="files">
-      <list>
-        <option value="$PROJECT_DIR$/.idea/dev-fingertips.iml" />
-        <option value="$PROJECT_DIR$/.idea/misc.xml" />
-        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
-        <option value="$PROJECT_DIR$/.idea/modules.xml" />
-        <option value="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectId" id="1XrSTdL53fShwiPHPUeWq8yLTF4" />
+  <component name="ProjectId" id="1ZnmTn2s4p3KAgVMcBj9O0gLSCz" />
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/middleware" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunDashboard">
@@ -78,13 +62,21 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="4dcb341d-0cb5-4d9d-b31d-a04e16c0cc43" name="Default Changelist" comment="" />
-      <created>1581802728943</created>
+      <changelist id="15ebf2c4-e263-4551-a38f-2245c9e4f345" name="Default Changelist" comment="" />
+      <created>1585483242719</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1581802728943</updated>
-      <workItem from="1581802730749" duration="276000" />
+      <updated>1585483242719</updated>
+      <workItem from="1585483246556" duration="957000" />
     </task>
+    <task id="LOCAL-00001" summary="Fixed PO Number issue, PO status change issue, Enable MR delete only for pending items">
+      <created>1585483463513</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1585483463513</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -100,5 +92,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Fixed PO Number issue, PO status change issue, Enable MR delete only for pending items" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed PO Number issue, PO status change issue, Enable MR delete only for pending items" />
   </component>
 </project>

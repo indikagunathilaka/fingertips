@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/dev-fingertips.iml" filepath="$PROJECT_DIR$/.idea/dev-fingertips.iml" />
+      <module fileurl="file://$PROJECT_DIR$/fingertips.iml" filepath="$PROJECT_DIR$/fingertips.iml" />
     </modules>
   </component>
 </project>
